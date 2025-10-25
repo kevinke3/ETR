@@ -1,3 +1,4 @@
+// Create Receipt functionality
 document.addEventListener('DOMContentLoaded', function() {
     let items = [];
     
@@ -17,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add new item row
     function addItemRow() {
         const itemRow = document.createElement('div');
-        itemRow.className = 'item-row form-row';
+        itemRow.className = 'item-row';
         itemRow.innerHTML = `
             <div class="form-group">
                 <input type="text" class="item-name" placeholder="Product Name" required>
@@ -84,9 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
         totalAmountElement.textContent = `KSh ${totalAmount.toLocaleString()}`;
     }
     
-    // Generate receipt
-    async function generateReceipt() {
-        // Validate form
+    // Validate form
+    function validateForm() {
         let valid = true;
         const items = [];
         
@@ -97,18 +97,33 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!name || isNaN(quantity) || quantity <= 0 || isNaN(price) || price < 0) {
                 valid = false;
-                return;
+                // Highlight invalid fields
+                if (!name) row.querySelector('.item-name').style.borderColor = 'red';
+                if (isNaN(quantity) || quantity <= 0) row.querySelector('.item-quantity').style.borderColor = 'red';
+                if (isNaN(price) || price < 0) row.querySelector('.item-price').style.borderColor = 'red';
+            } else {
+                // Reset border color if valid
+                row.querySelector('.item-name').style.borderColor = '';
+                row.querySelector('.item-quantity').style.borderColor = '';
+                row.querySelector('.item-price').style.borderColor = '';
+                
+                items.push({
+                    name: name,
+                    quantity: quantity,
+                    price: price
+                });
             }
-            
-            items.push({
-                name: name,
-                quantity: quantity,
-                price: price
-            });
         });
         
-        if (!valid || items.length === 0) {
-            alert('Please fill in all item fields correctly.');
+        return { valid, items };
+    }
+    
+    // Generate receipt
+    async function generateReceipt() {
+        const validation = validateForm();
+        
+        if (!validation.valid || validation.items.length === 0) {
+            alert('Please fill in all item fields correctly. Product name, quantity (>0), and price (≥0) are required.');
             return;
         }
         
@@ -116,8 +131,12 @@ document.addEventListener('DOMContentLoaded', function() {
             customer_name: document.getElementById('customerName').value || 'Walk-in Customer',
             customer_pin: document.getElementById('customerPIN').value,
             payment_method: document.getElementById('paymentMethod').value,
-            items: items
+            items: validation.items
         };
+        
+        // Show loading state
+        generateReceiptBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        generateReceiptBtn.disabled = true;
         
         try {
             const response = await fetch('/create-receipt', {
@@ -137,15 +156,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             alert('Error generating receipt: ' + error.message);
+        } finally {
+            // Reset button state
+            generateReceiptBtn.innerHTML = 'Generate ETR Receipt';
+            generateReceiptBtn.disabled = false;
         }
     }
     
     // Show receipt in modal
     function showReceipt(result) {
-        const subtotal = result.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const vatAmount = subtotal * 0.16;
-        const totalAmount = subtotal + vatAmount;
-        
         let itemsHTML = '';
         result.items.forEach(item => {
             const itemTotal = item.price * item.quantity;
@@ -162,8 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
         receiptContent.innerHTML = `
             <div class="receipt">
                 <div class="receipt-header">
-                    <h2>Tech Solutions Ltd</h2>
-                    <p>KRA PIN: P051234567M</p>
+                    <h2>${document.querySelector('.business-info h3').nextElementSibling.textContent.replace('Name: ', '')}</h2>
+                    <p>${document.querySelector('.business-info p:nth-child(3)').textContent}</p>
                     <p>Electronic Tax Receipt</p>
                 </div>
                 <div class="receipt-body">
@@ -189,15 +208,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="receipt-totals">
                         <div class="summary-row">
                             <span>Subtotal:</span>
-                            <span>KSh ${subtotal.toLocaleString()}</span>
+                            <span>KSh ${result.subtotal.toLocaleString()}</span>
                         </div>
                         <div class="summary-row">
                             <span>VAT (16%):</span>
-                            <span>KSh ${vatAmount.toLocaleString()}</span>
+                            <span>KSh ${result.vat_amount.toLocaleString()}</span>
                         </div>
                         <div class="summary-row summary-total">
                             <span>Total:</span>
-                            <span>KSh ${totalAmount.toLocaleString()}</span>
+                            <span>KSh ${result.total_amount.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -220,6 +239,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Clear form
     function clearForm() {
+        if (!confirm('Are you sure you want to clear the form? All entered data will be lost.')) {
+            return;
+        }
+        
         document.getElementById('customerName').value = '';
         document.getElementById('customerPIN').value = '';
         document.getElementById('paymentMethod').value = 'Cash';
@@ -242,17 +265,47 @@ document.addEventListener('DOMContentLoaded', function() {
     addItemBtn.addEventListener('click', addItemRow);
     generateReceiptBtn.addEventListener('click', generateReceipt);
     clearFormBtn.addEventListener('click', clearForm);
+    
     closeReceiptBtn.addEventListener('click', function() {
         receiptModal.style.display = 'none';
-        clearForm();
     });
     
     printReceiptBtn.addEventListener('click', function() {
-        window.print();
+        const receiptElement = receiptContent.querySelector('.receipt');
+        if (receiptElement) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Print Receipt</title>
+                        <style>
+                            body { font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
+                            .receipt { max-width: 400px; margin: 0 auto; border: 2px solid #000; padding: 20px; }
+                            .receipt-header { text-align: center; margin-bottom: 1.5rem; border-bottom: 1px dashed #000; padding-bottom: 1rem; }
+                            .receipt-items { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+                            .receipt-items th, .receipt-items td { padding: 0.25rem 0; border-bottom: 1px dashed #ccc; text-align: left; }
+                            .receipt-totals { border-top: 1px dashed #000; padding-top: 1rem; }
+                            .summary-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+                            .summary-total { font-weight: bold; font-size: 1.2rem; border-top: 1px solid #000; padding-top: 0.5rem; }
+                            .qr-code { text-align: center; margin: 1rem 0; }
+                            .receipt-footer { text-align: center; font-size: 0.8rem; color: #666; border-top: 1px dashed #000; padding-top: 1rem; }
+                        </style>
+                    </head>
+                    <body>
+                        ${receiptElement.outerHTML}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
     });
     
     saveReceiptBtn.addEventListener('click', function() {
-        window.location.href = `/receipt/${this.dataset.receiptId}`;
+        const receiptId = this.dataset.receiptId;
+        if (receiptId) {
+            window.location.href = `/receipt/${receiptId}`;
+        }
     });
     
     // Initialize event listeners for first row
@@ -271,4 +324,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize totals
     updateTotals();
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + Enter to generate receipt
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            generateReceipt();
+        }
+        
+        // Ctrl + + to add new item
+        if (e.ctrlKey && e.key === '+') {
+            e.preventDefault();
+            addItemRow();
+        }
+    });
 });

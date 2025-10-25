@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Receipt | ETR System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>ETR System</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                    <li><a href="{{ url_for('create_receipt') }}"><i class="fas fa-receipt"></i> <span>Create Receipt</span></a></li>
+                    <li><a href="{{ url_for('import_receipt') }}" class="active"><i class="fas fa-file-import"></i> <span>Import Receipt</span></a></li>
+                    <li><a href="{{ url_for('receipts') }}"><i class="fas fa-list"></i> <span>Receipts</span></a></li>
+                    <li><a href="{{ url_for('reports') }}"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li>
+                    <li><a href="{{ url_for('settings') }}"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1>Import Receipt from POS</h1>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <div class="user-name">{{ current_user.username }}</div>
+                        <div class="user-role">{{ current_user.role|title }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h2>Import POS Receipt</h2>
+                
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="alert alert-success">
+                            {{ messages[0] }}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div>
+                        <h3>Upload Receipt File</h3>
+                        <p>Upload a JSON or CSV file from your POS system to generate an ETR-compliant receipt with QR code.</p>
+                        
+                        <form method="POST" enctype="multipart/form-data" style="margin-top: 1.5rem;">
+                            <div class="form-group">
+                                <label for="file">Select File (JSON or CSV)</label>
+                                <input type="file" id="file" name="file" accept=".json,.csv" required>
+                            </div>
+                            <button type="submit" class="btn">
+                                <i class="fas fa-upload"></i> Import Receipt
+                            </button>
+                        </form>
+                    </div>
+
+                    <div>
+                        <h3>How It Works</h3>
+                        <div style="background: var(--light-gray); padding: 1.5rem; border-radius: var(--border-radius);">
+                            <ol style="margin-left: 1.5rem; line-height: 2;">
+                                <li>Export receipt data from your POS system as JSON or CSV</li>
+                                <li>Upload the file using the form</li>
+                                <li>System extracts total amount and calculates VAT</li>
+                                <li>Generates ETR-compliant receipt with QR code</li>
+                                <li>Print or save the receipt for KRA compliance</li>
+                            </ol>
+                            
+                            <div style="margin-top: 1rem; padding: 1rem; background: white; border-radius: var(--border-radius);">
+                                <h4>Supported Fields:</h4>
+                                <ul style="margin-left: 1.5rem;">
+                                    <li><code>total</code>, <code>total_amount</code>, <code>amount</code></li>
+                                    <li><code>grand_total</code>, <code>final_amount</code></li>
+                                    <li>Nested objects with <code>summary.total</code></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Sample JSON Format</h3>
+                <pre style="background: var(--light-gray); padding: 1rem; border-radius: var(--border-radius); overflow-x: auto;">
+{
+    "total": 1250.00,
+    "items": [
+        {"name": "Product 1", "price": 500, "quantity": 1},
+        {"name": "Product 2", "price": 750, "quantity": 1}
+    ],
+    "customer": "John Doe",
+    "payment_method": "Cash"
+}</pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

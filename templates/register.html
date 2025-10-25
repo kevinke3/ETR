@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | ETR System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <h1>ETR System</h1>
+                <p>Business Registration</p>
+            </div>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-error">
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="business_name">Business Name *</label>
+                        <input type="text" id="business_name" name="business_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kra_pin">KRA PIN *</label>
+                        <input type="text" id="kra_pin" name="kra_pin" pattern="[A-Z]\d{9}[A-Z]" title="Format: A123456789X" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone_number">Phone Number *</label>
+                        <input type="tel" id="phone_number" name="phone_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="person_in_charge">Person In Charge *</label>
+                        <input type="text" id="person_in_charge" name="person_in_charge" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="town_city">Town/City *</label>
+                    <input type="text" id="town_city" name="town_city" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">Username *</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" minlength="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password *</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-block">Register Business</button>
+            </form>
+            
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

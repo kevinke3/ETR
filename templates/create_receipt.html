@@ -76,7 +76,7 @@
 
                     <div id="itemsContainer">
                         <!-- Items will be added here dynamically -->
-                        <div class="item-row form-row">
+                        <div class="item-row">
                             <div class="form-group">
                                 <input type="text" class="item-name" placeholder="Product Name" required>
                             </div>
@@ -104,6 +104,12 @@
                         <h2>Receipt Summary</h2>
                     </div>
 
+                    <div class="business-info" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--light-gray); border-radius: var(--border-radius);">
+                        <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Business Information</h3>
+                        <p style="margin: 0.25rem 0; font-size: 0.9rem;"><strong>Name:</strong> {{ user_data.business_name }}</p>
+                        <p style="margin: 0.25rem 0; font-size: 0.9rem;"><strong>KRA PIN:</strong> {{ user_data.kra_pin }}</p>
+                    </div>
+
                     <div class="cart-summary">
                         <div class="summary-row">
                             <span>Subtotal:</span>
@@ -120,7 +126,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button class="btn btn-outline" id="clearFormBtn">Clear</button>
+                        <button class="btn btn-outline" id="clearFormBtn">Clear Form</button>
                         <button class="btn" id="generateReceiptBtn">Generate ETR Receipt</button>
                     </div>
                 </div>
@@ -134,10 +140,10 @@
             <div id="receiptContent">
                 <!-- Receipt content will be generated here -->
             </div>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
                 <button class="btn btn-outline" id="closeReceiptBtn">Close</button>
                 <button class="btn" id="printReceiptBtn">Print Receipt</button>
-                <button class="btn" id="saveReceiptBtn">Save Receipt</button>
+                <button class="btn" id="saveReceiptBtn">Save & View</button>
             </div>
         </div>
     </div>

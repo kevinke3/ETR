@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Receipt | ETR System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
+</head>
+<body class="mobile-receipt">
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <h2>{{ user_data.business_name }}</h2>
+            <p>KRA PIN: {{ user_data.kra_pin }}</p>
+            <p>Electronic Tax Receipt</p>
+        </div>
+        
+        <div class="receipt-body">
+            <div class="receipt-info">
+                <p><strong>Receipt No:</strong> {{ receipt.receipt_number }}</p>
+                <p><strong>Date:</strong> {{ receipt.created_at }}</p>
+                <p><strong>Customer:</strong> {{ receipt.customer_name }}</p>
+            </div>
+            
+            <div class="receipt-items">
+                {% for item in items %}
+                <div class="receipt-item">
+                    <span class="item-name">{{ item.product_name }}</span>
+                    <span class="item-details">{{ item.quantity }} x KSh {{ "%.2f"|format(item.unit_price) }}</span>
+                    <span class="item-total">KSh {{ "%.2f"|format(item.total_price) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="receipt-totals">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span>KSh {{ "%.2f"|format(receipt.subtotal) }}</span>
+                </div>
+                <div class="total-row">
+                    <span>VAT (16%):</span>
+                    <span>KSh {{ "%.2f"|format(receipt.vat_amount) }}</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Total:</span>
+                    <span>KSh {{ "%.2f"|format(receipt.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="receipt-qr">
+            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+        </div>
+        
+        <div class="receipt-footer">
+            <p>Thank you for your business!</p>
+            <p>Scan QR code for verification</p>
+        </div>
+        
+        <div class="receipt-actions">
+            <button onclick="window.print()" class="btn-print">
+                <i class="fas fa-print"></i> Print Receipt
+            </button>
+            <button onclick="shareReceipt()" class="btn-share">
+                <i class="fas fa-share"></i> Share Receipt
+            </button>
+            <button onclick="saveToPhone()" class="btn-save">
+                <i class="fas fa-download"></i> Save to Phone
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function shareReceipt() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Receipt {{ receipt.receipt_number }}',
+                    text: 'Receipt from {{ user_data.business_name }}',
+                    url: window.location.href
+                });
+            } else {
+                alert('Web Share API not supported in your browser');
+            }
+        }
+
+        function saveToPhone() {
+            // Implementation for saving receipt as PDF/image
+            alert('Receipt saved to your device');
+        }
+    </script>
+</body>
+</html>

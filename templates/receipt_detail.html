@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt {{ receipt.receipt_number }} | ETR System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .receipt {
+                box-shadow: none !important;
+                border: 2px solid #000 !important;
+                max-width: 100% !important;
+            }
+            body {
+                background: white !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar no-print">
+            <div class="sidebar-header">
+                <h2>ETR System</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                    <li><a href="{{ url_for('create_receipt') }}"><i class="fas fa-receipt"></i> <span>Create Receipt</span></a></li>
+                    <li><a href="{{ url_for('receipts') }}"><i class="fas fa-list"></i> <span>Receipts</span></a></li>
+                    <li><a href="{{ url_for('reports') }}"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li>
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header no-print">
+                <h1>Receipt {{ receipt.receipt_number }}</h1>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <div class="user-name">{{ current_user.username }}</div>
+                        <div class="user-role">Business Owner</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container" style="max-width: 600px; margin: 0 auto;">
+                <div class="receipt">
+                    <div class="receipt-header">
+                        <h2>{{ business_name }}</h2>
+                        <p>KRA PIN: {{ kra_pin }}</p>
+                        <p>Electronic Tax Receipt</p>
+                    </div>
+                    <div class="receipt-body">
+                        <p><strong>Receipt No:</strong> {{ receipt.receipt_number }}</p>
+                        <p><strong>Date & Time:</strong> {{ receipt.created_at }}</p>
+                        <p><strong>Customer:</strong> {{ receipt.customer_name }}</p>
+                        {% if receipt.customer_pin %}
+                        <p><strong>Customer PIN:</strong> {{ receipt.customer_pin }}</p>
+                        {% endif %}
+                        <p><strong>Payment Method:</strong> {{ receipt.payment_method }}</p>
+                        
+                        <table class="receipt-items">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item.product_name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>KSh {{ "%.2f"|format(item.unit_price) }}</td>
+                                    <td>KSh {{ "%.2f"|format(item.total_price) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <div class="receipt-totals">
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span>KSh {{ "%.2f"|format(receipt.subtotal) }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>VAT (16%):</span>
+                                <span>KSh {{ "%.2f"|format(receipt.vat_amount) }}</span>
+                            </div>
+                            <div class="summary-row summary-total">
+                                <span>Total:</span>
+                                <span>KSh {{ "%.2f"|format(receipt.total_amount) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="qr-code">
+                        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+                    </div>
+                    <div class="receipt-footer">
+                        <p>Thank you for your business!</p>
+                        <p>This is an electronically generated receipt</p>
+                        <p>For verification, scan QR code</p>
+                    </div>
+                </div>
+
+                <div class="form-actions no-print" style="margin-top: 2rem;">
+                    <button onclick="window.print()" class="btn">
+                        <i class="fas fa-print"></i> Print Receipt
+                    </button>
+                    <a href="{{ url_for('receipts') }}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Back to Receipts
+                    </a>
+                    <a href="{{ url_for('create_receipt') }}" class="btn btn-outline">
+                        <i class="fas fa-plus"></i> New Receipt
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

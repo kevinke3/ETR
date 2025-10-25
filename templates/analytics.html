@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics | ETR System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>ETR System</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                    <li><a href="{{ url_for('create_receipt') }}"><i class="fas fa-receipt"></i> <span>Create Receipt</span></a></li>
+                    <li><a href="{{ url_for('import_receipt') }}"><i class="fas fa-file-import"></i> <span>Import Receipt</span></a></li>
+                    <li><a href="{{ url_for('receipts') }}"><i class="fas fa-list"></i> <span>Receipts</span></a></li>
+                    <li><a href="{{ url_for('reports') }}"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li>
+                    <li><a href="{{ url_for('analytics') }}" class="active"><i class="fas fa-chart-line"></i> <span>Analytics</span></a></li>
+                    <li><a href="{{ url_for('settings') }}"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                    {% if current_user.role == 'admin' %}
+                    <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users"></i> <span>Manage Users</span></a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1>Business Analytics</h1>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <div class="user-name">{{ current_user.username }}</div>
+                        <div class="user-role">{{ current_user.role|title }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date Range Selector -->
+            <div class="chart-container">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="analyticsDateFrom">From Date</label>
+                        <input type="date" id="analyticsDateFrom" value="{{ date_from }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="analyticsDateTo">To Date</label>
+                        <input type="date" id="analyticsDateTo" value="{{ date_to }}">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn" onclick="loadAnalytics()" style="margin-top: 1.75rem;">
+                            <i class="fas fa-sync-alt"></i> Update Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Revenue</h3>
+                    <div class="stat-value" id="totalRevenue">KSh 0</div>
+                    <div class="stat-change" id="revenueChange">+0% vs previous period</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Average Transaction</h3>
+                    <div class="stat-value" id="avgTransaction">KSh 0</div>
+                    <div class="stat-change" id="transactionChange">+0% vs previous period</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Busiest Hour</h3>
+                    <div class="stat-value" id="busiestHour">--:--</div>
+                    <div class="stat-change" id="hourStats">0 transactions</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Customer Growth</h3>
+                    <div class="stat-value" id="customerGrowth">0%</div>
+                    <div class="stat-change" id="growthStats">+0 new customers</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Sales Trend</h3>
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Payment Methods</h3>
+                    <canvas id="paymentMethodsChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Hourly Sales Distribution</h3>
+                    <canvas id="hourlySalesChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Customer Types</h3>
+                    <canvas id="customerTypesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Products -->
+            <div class="chart-container">
+                <h3>Top Selling Products</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity Sold</th>
+                            <th>Total Revenue</th>
+                            <th>% of Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topProductsTable">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+</body>
+</html>
