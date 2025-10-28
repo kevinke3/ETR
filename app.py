@@ -1175,7 +1175,7 @@ if __name__ == '__main__':
     os.makedirs('backups', exist_ok=True)
     os.makedirs('logs', exist_ok=True)
     
-    # Initialize database
+    # Initialize database hghghg
     init_db()
     
     # Run the application
